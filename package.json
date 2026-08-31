@@ -1,0 +1,139 @@
+{
+  "name": "vscode-ai-commit",
+  "displayName": "AI Commit Message",
+  "description": "Generate a commit message from your staged changes with the Claude Code or Codex CLI, using your existing subscription.",
+  "version": "0.1.0",
+  "publisher": "wahidlinku",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WahidN/vscode-ai-commit.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "SCM Providers",
+    "AI"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiCommit.generate",
+        "title": "Generate Commit Message",
+        "category": "AI Commit",
+        "icon": "$(sparkle)"
+      }
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "aiCommit.generate",
+          "when": "scmProvider == git",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AI Commit Message",
+      "properties": {
+        "aiCommit.provider": {
+          "type": "string",
+          "enum": ["claude", "codex"],
+          "default": "claude",
+          "description": "Which local CLI generates the message. Both run under your own subscription login, no API key."
+        },
+        "aiCommit.claudePath": {
+          "type": "string",
+          "default": "claude",
+          "description": "Path to the Claude Code CLI. Use an absolute path if the extension cannot find it."
+        },
+        "aiCommit.codexPath": {
+          "type": "string",
+          "default": "codex",
+          "description": "Path to the Codex CLI. Use an absolute path if the extension cannot find it."
+        },
+        "aiCommit.claudeModel": {
+          "type": "string",
+          "default": "sonnet",
+          "description": "Model alias passed to claude --model. Empty means your Claude Code default."
+        },
+        "aiCommit.codexModel": {
+          "type": "string",
+          "default": "",
+          "description": "Model passed to codex exec -m. Empty means your Codex default."
+        },
+        "aiCommit.codexArgs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Extra arguments for codex exec, inserted before the prompt."
+        },
+        "aiCommit.language": {
+          "type": "string",
+          "enum": ["english", "dutch"],
+          "default": "english",
+          "description": "Language of the commit description. The Conventional Commits type and scope stay English either way."
+        },
+        "aiCommit.includeBody": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add a short bullet body under the subject line."
+        },
+        "aiCommit.promptTemplate": {
+          "type": "string",
+          "default": "",
+          "editPresentation": "multilineText",
+          "description": "Replace the built-in prompt. Placeholders: {{rules}}, {{branch}}, {{source}}, {{stat}}, {{patch}}."
+        },
+        "aiCommit.diffSource": {
+          "type": "string",
+          "enum": ["staged", "stagedThenAll"],
+          "default": "stagedThenAll",
+          "description": "staged: only staged changes. stagedThenAll: fall back to the whole working tree when nothing is staged."
+        },
+        "aiCommit.maxDiffChars": {
+          "type": "number",
+          "default": 40000,
+          "description": "Truncate the patch above this many characters. The file list stays complete."
+        },
+        "aiCommit.excludeGlobs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [
+            "**/node_modules/**",
+            "**/.next/**",
+            "**/pnpm-lock.yaml",
+            "**/package-lock.json",
+            "**/yarn.lock",
+            "**/bun.lockb",
+            "**/*.min.js",
+            "**/*.min.css",
+            "**/*.snap",
+            "**/dist/**",
+            "**/build/**"
+          ],
+          "description": "Paths kept out of the patch body. They still show up in the file list."
+        },
+        "aiCommit.timeoutSeconds": {
+          "type": "number",
+          "default": 90,
+          "description": "Kill the CLI after this many seconds."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "vscode:prepublish": "npm run compile",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.5.0"
+  }
+}
