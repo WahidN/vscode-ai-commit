@@ -54,9 +54,12 @@ async function runClaude(
   const res = await run(options.claudePath, args, { cwd, stdin: prompt, timeoutMs: options.timeoutMs });
   options.log(res.stderr.trim());
 
-  let payload: { result?: string; is_error?: boolean; subtype?: string };
+  type ClaudeResult = { type?: string; result?: string; is_error?: boolean; subtype?: string };
+  let payload: ClaudeResult;
   try {
-    payload = JSON.parse(res.stdout);
+    const parsed: ClaudeResult | ClaudeResult[] = JSON.parse(res.stdout);
+    // Newer CLI versions print every event as an array; the answer is in the "result" event.
+    payload = Array.isArray(parsed) ? parsed.find((e) => e.type === 'result') ?? {} : parsed;
   } catch {
     if (res.code !== 0) throw new Error(claudeFailure(res.stderr, res.stdout));
     return sanitize(res.stdout);
